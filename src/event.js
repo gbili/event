@@ -45,7 +45,7 @@ gbili.event = function() {
         }
         // Add the callback to the priority array
         events[eventName].listeners[priority].push(callback);
-    },
+    };
 
     var trigger = function (eventName, params) {
         if (!events[eventName]) {
@@ -82,7 +82,7 @@ gbili.event = function() {
         var ret = (returnDefaultResponse && [params.defaultResponse]) || responses[eventName];
         console.log('ret');
         console.log(ret);
-    },
+    };
 
     return {
         getEvents : function() {
