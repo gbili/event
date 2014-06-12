@@ -8,7 +8,7 @@ gbili.toType = function(obj) {
 // gbili.event enables events, you can addListeners, trigger events and
 // access the events list
 //
-gbili.event = {
+gbili.event = function() { 
     // every event has
     // {
     //     propagationIsStopped:false, 
@@ -16,7 +16,7 @@ gbili.event = {
     //     params:{}, 
     //     target:{}
     // }
-    events: {},
+    var events = {};
 
     // Responses are sorted by event name as key
     // {
@@ -31,31 +31,31 @@ gbili.event = {
     //         ...
     //     ]
     // }
-    responses: {},
+    var responses = {};
 
-    addListener: function (eventName, callback, priority) {
-        if (!this.events.hasOwnProperty(eventName)) {
-            this.events[eventName] = {
+    var addListener = function (eventName, callback, priority) {
+        if (!events.hasOwnProperty(eventName)) {
+            events[eventName] = {
                 listeners : [] 
             };
         }
         // Initialize the array with priority
-        if (!(priority in this.events[eventName].listeners)) {
-            this.events[eventName].listeners[priority] = [];
+        if (!(priority in events[eventName].listeners)) {
+            events[eventName].listeners[priority] = [];
         }
         // Add the callback to the priority array
-        this.events[eventName].listeners[priority].push(callback);
+        events[eventName].listeners[priority].push(callback);
     },
 
-    trigger: function (eventName, params) {
-        if (!this.events[eventName]) {
+    var trigger = function (eventName, params) {
+        if (!events[eventName]) {
             return;
         }
 
         // Initialize to empty responses queue
-        this.responses[eventName] = [];
+        responses[eventName] = [];
 
-        var triggeredEvent = this.events[eventName];
+        var triggeredEvent = events[eventName];
         var sortedListenerPriorities = triggeredEvent.listeners.sort();
 
         // Listeners can access event.params and event.target 
@@ -70,17 +70,28 @@ gbili.event = {
         for (i in sortedListenerPriorities) {
             for (j in sortedListenerPriorities[i]) {
                 var listenerCallback = sortedListenerPriorities[i][j];
-                this.responses[eventName].push(listenerCallback(triggeredEvent));
+                responses[eventName].push(listenerCallback(triggeredEvent));
                 if (triggeredEvent.propagationIsStopped) {
                     break execute_listeners;
                 }
             }
         }
-        var returnDefaultResponse = params.hasOwnProperty('defaultReponse') && this.responses[eventName].length() == 0;
+        var returnDefaultResponse = params.hasOwnProperty('defaultReponse') && responses[eventName].length() == 0;
         console.log('returnDefaultResponse');
         console.log(returnDefaultResponse);
-        var ret = (returnDefaultResponse && [params.defaultResponse]) || this.responses[eventName];
+        var ret = (returnDefaultResponse && [params.defaultResponse]) || responses[eventName];
         console.log('ret');
         console.log(ret);
     },
-};
+
+    return {
+        getEvents : function() {
+            return events;
+        },
+        getResponses : function() {
+            return responses;
+        },
+        addListener: addListener,
+        trigger: trigger,
+    };
+}();
