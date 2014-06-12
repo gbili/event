@@ -10,12 +10,10 @@ gbili.poll = function() {
 
     var progressTimeInMs = 900,
         progressInterval,
+        progressBar,
         url,
-        showProgressCallback,
-        clearProgressCallback,
-        baseUrl = '/upload_progress.php?id=',
+        baseUrl = '/upload_progress.php?id=';
         // Used to get the current progress
-        progressCssSelector = '#progress_key';//jQuery identifier
 
     var getMessage = function(value) {
         return (value === 0 && m.starting) || (value === 100 && m.complete) || m.inProgress;
@@ -27,18 +25,18 @@ gbili.poll = function() {
 
     var updateProgress = function (data) {
         var progressValue = getValue(data);
-        showProgressCallback(progressValue, getMessage(progressValue));
+        progressBar.show(progressValue, getMessage(progressValue));
         if (data.status.done) {
             clearInterval(progressInterval);
             progressInterval = null;
-            clearProgressCallback();
+            progressBar.reset();
         }
     };
 
     var getUrl = function() {
         // querying html, but there is no need, simply using a 
         // local variable to store progress would also work
-        return baseUrl + $(progressCssSelector).val();
+        return baseUrl + progressBar.getValue();
     };
 
     var updateProgressFromServer = function() {
@@ -49,21 +47,13 @@ gbili.poll = function() {
         setBaseUrl : function(bUrl) {
             baseUrl = bUrl;
         },
-        setProgressCssSelector : function(selector) {
-            progressCssSelector = selector;
-        },
-        setClearProgressCallback : function() {
-            clearProgressCallback = params.clearProgressCallback;
-        },
-        setShowProgressCallback : function() {
-            showProgressCallback = params.showProgressCallback;
+        setProgressBar : function(pBar) {
+            progressBar = pBar;
         },
         start : function(params) {
             params = params || {};
-            if (params.hasOwnProperty('showProgressCallback')) this.setShowProgressCallback(params.showProgressCallback);
-            if (params.hasOwnProperty('clearProgressCallback')) this.setClearProgressCallback(params.clearProgressCallback);
             if (params.hasOwnProperty('baseUrl')) this.setBaseUrl(params.baseUrl);
-            if (params.hasOwnProperty('progressCssSelector')) this.setProgressCssSelector(params.progressCssSelector);
+            if (params.hasOwnProperty('progressBar')) this.setProgressBar(params.progressBar);
 
             if (null === progressInterval) {
                 // Show the starting message

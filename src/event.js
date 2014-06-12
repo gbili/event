@@ -77,6 +77,10 @@ gbili.event = {
             }
         }
         var returnDefaultResponse = params.hasOwnProperty('defaultReponse') && this.responses[eventName].length() == 0;
-        return (returnDefaultResponse && [params.defaultResponse]) || this.responses[eventName];
+        console.log('returnDefaultResponse');
+        console.log(returnDefaultResponse);
+        var ret = (returnDefaultResponse && [params.defaultResponse]) || this.responses[eventName];
+        console.log('ret');
+        console.log(ret);
     },
 };

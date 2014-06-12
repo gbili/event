@@ -20,8 +20,8 @@ gbili.ajaxForm = function (){
         },
         // Make a normal form an ajax form
         create : function(params) {
-            if (params.hasOwnProperty('form'))  params.form = $(params.formCssSelector);
-            if (params.hasOwnProperty('fileInput')) params.form = $(params.fileInputCssSelector);
+            if (params.hasOwnProperty('formCssSelector'))  params.form = $(params.formCssSelector);
+            if (params.hasOwnProperty('fileInput')) params.fileInput = $(params.fileInputCssSelector);
 
             form = params.form;
             formCssSelector = params.formCssSelector;
@@ -31,7 +31,7 @@ gbili.ajaxForm = function (){
             form.on('submit', function(e) {
                 e.preventDefault();
 
-                if (fileInput.var() == '' && gbili.event.trigger(formCssSelector + '.no_file_selected_abort?', {
+                if (fileInput.val() == '' && gbili.event.trigger(formCssSelector + '.no_file_selected_abort?', {
                         target: fileInput, 
                         params: {form: form,},
                         defaultResponse: true,
@@ -39,6 +39,7 @@ gbili.ajaxForm = function (){
                     return;
                 }
 
+                console.log(gbili);
                 if (false === gbili.event.trigger(formCssSelector + '.submit?', {target: form,}).pop()) {
                     return;
                 }
@@ -71,10 +72,16 @@ gbili.ajaxForm = function (){
                         // You will need to handle validation errors in the 'success' callback.
                         gbili.event.trigger(formCssSelector + '.submit.fail', {target: form,});
                     }
-                    gbili.event.trigger(formCssSelector + '.submit.start', {target: form,}).pop();
                 });
+
+                gbili.event.trigger(formCssSelector + '.submit.start', {target: form,}).pop();
             });
-            return form;
+
+            if (params.hasOwnProperty('register012ResponseStatus')) {
+                params.register012ResponseStatus && this.register012ResponseStatusEvents(1);
+            } else {
+                this.register012ResponseStatusEvents(1);
+            }
         },
         // Listen to submit.success and trigger reponse specific events
         register012ResponseStatusEvents : function(priority) {
