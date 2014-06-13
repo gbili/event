@@ -47,16 +47,33 @@ gbili.event = function() {
         events[eventName].listeners[priority].push(callback);
     };
 
-    var trigger = function (eventName, params) {
-        if (!events[eventName]) {
-            return;
-        }
+    var executeEventListeners = function(triggeredEvent){
+        var i, j, 
+            listenerCallback, 
+            eventName = triggeredEvent.name,
+            sortedListenerPriorities = triggeredEvent.listeners.sort();
 
+        for (i in sortedListenerPriorities) {
+            for (j in sortedListenerPriorities[i]) {
+                listenerCallback = sortedListenerPriorities[i][j];
+                responses[eventName].push(listenerCallback(triggeredEvent));
+                if (triggeredEvent.propagationIsStopped) {
+                    return false;
+                }
+            }
+        }
+        return true;
+    };
+
+    var trigger = function (eventName, params) {
         // Initialize to empty responses queue
         responses[eventName] = [];
 
+        if (!events[eventName]) {
+            return responses[eventName];
+        }
+
         var triggeredEvent = events[eventName];
-        var sortedListenerPriorities = triggeredEvent.listeners.sort();
 
         // Listeners can access event.params and event.target 
         triggeredEvent.name = eventName;
@@ -65,23 +82,10 @@ gbili.event = function() {
         triggeredEvent.lastListenerReturn = null;
         triggeredEvent.propagationIsStopped = false;
 
-        var listenerRetval;
-        execute_listeners:
-        for (i in sortedListenerPriorities) {
-            for (j in sortedListenerPriorities[i]) {
-                var listenerCallback = sortedListenerPriorities[i][j];
-                responses[eventName].push(listenerCallback(triggeredEvent));
-                if (triggeredEvent.propagationIsStopped) {
-                    break execute_listeners;
-                }
-            }
-        }
-        var returnDefaultResponse = params.hasOwnProperty('defaultReponse') && responses[eventName].length() == 0;
-        console.log('returnDefaultResponse');
-        console.log(returnDefaultResponse);
-        var ret = (returnDefaultResponse && [params.defaultResponse]) || responses[eventName];
-        console.log('ret');
-        console.log(ret);
+        executeEventListeners(triggeredEvent);
+
+        var returnDefaultResponse = params.hasOwnProperty('defaultReponse') && (responses[eventName].length() == 0);
+        return (returnDefaultResponse && [params.defaultResponse]) || responses[eventName];
     };
 
     return {

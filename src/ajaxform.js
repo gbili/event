@@ -8,6 +8,11 @@ gbili.ajaxForm = function (){
         formCssSelector,
         fileInput;
 
+    //  93 // http://stackoverflow.com/a/1043969
+    var clearFileInput = function(event) {
+        fileInput.replaceWith(fileInput.val('').clone( true ));
+    };
+
     return {
         getForm : function() {
             return form;
@@ -21,11 +26,14 @@ gbili.ajaxForm = function (){
         // Make a normal form an ajax form
         create : function(params) {
             if (params.hasOwnProperty('formCssSelector'))  params.form = $(params.formCssSelector);
-            if (params.hasOwnProperty('fileInput')) params.fileInput = $(params.fileInputCssSelector);
+            if (!params.hasOwnProperty('fileInput') && params.hasOwnProperty('fileInputCssSelector')) params.fileInput = $(params.fileInputCssSelector);
 
             form = params.form;
             formCssSelector = params.formCssSelector;
             fileInput = params.fileInput;
+            
+            // Every time files are sent Clear the file input, otherwise the same file gets re-uploaded
+            gbili.event.addListener(formCssSelector + '.submit.after', clearFileInput, 100);
 
             // Register a 'submit' event listener on the form to perform the AJAX POST
             form.on('submit', function(e) {
@@ -38,9 +46,8 @@ gbili.ajaxForm = function (){
                     }).pop()) {
                     return;
                 }
-
-                console.log(gbili);
-                if (false === gbili.event.trigger(formCssSelector + '.submit?', {target: form,}).pop()) {
+                var response = gbili.event.trigger(formCssSelector + '.submit?', {target: form,});
+                if (false === response.pop()) {
                     return;
                 }
 
@@ -65,12 +72,14 @@ gbili.ajaxForm = function (){
                             },
                         });
                         gbili.event.trigger(formCssSelector + '.submit.success.after', {target: form,});
+                        gbili.event.trigger(formCssSelector + '.submit.after', {target: form,});
                     },
                     error: function(a, b, c) {
                         // NOTE: This callback is *not* called when the form is invalid.
                         // It is called when the browser is unable to initiate or complete the ajax submit.
                         // You will need to handle validation errors in the 'success' callback.
                         gbili.event.trigger(formCssSelector + '.submit.fail', {target: form,});
+                        gbili.event.trigger(formCssSelector + '.submit.after', {target: form,});
                     }
                 });
 
@@ -86,7 +95,7 @@ gbili.ajaxForm = function (){
         // Listen to submit.success and trigger reponse specific events
         register012ResponseStatusEvents : function(priority) {
             if (typeof priority === 'undefined') priority=10;
-            gbili.event.addListener(formCssSelector + 'submit.success', function(event) {
+            gbili.event.addListener(formCssSelector + '.submit.success', function(event) {
                 var eventName;
                 var status = event.params.response.status;
                 var statusToName = [];
