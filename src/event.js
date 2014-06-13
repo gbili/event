@@ -70,7 +70,8 @@ gbili.event = function() {
         responses[eventName] = [];
 
         if (!events[eventName]) {
-            return responses[eventName];
+            // If no listeners still retrun default response if available
+            return (params.hasOwnProperty('defaultResponse') && [params.defaultResponse]) || responses[eventName];
         }
 
         var triggeredEvent = events[eventName];
@@ -84,7 +85,8 @@ gbili.event = function() {
 
         executeEventListeners(triggeredEvent);
 
-        var returnDefaultResponse = params.hasOwnProperty('defaultReponse') && (responses[eventName].length() == 0);
+        // If listeners did not return anything, retrun default response if available, else return responses
+        var returnDefaultResponse = params.hasOwnProperty('defaultResponse') && (responses[eventName].length() == 0);
         return (returnDefaultResponse && [params.defaultResponse]) || responses[eventName];
     };
 

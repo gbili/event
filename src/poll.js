@@ -9,7 +9,7 @@ gbili.poll = function() {
     };
 
     var progressTimeInMs = 900,
-        progressInterval,
+        progressInterval = null,
         progressBar,
         url,
         baseUrl = '/upload_progress.php?id=';
@@ -23,12 +23,18 @@ gbili.poll = function() {
         return (data.status.done && 100) || Math.floor((data.status.current / data.status.total) * 100);
     };
 
+    var stop = function() {
+        if (typeof progressInterval !== null) {
+            clearInterval(progressInterval);
+            progressInterval = null;
+        }
+    };
+
     var updateProgressView = function (data) {
         var progressValue = getValue(data);
         progressBar.show(progressValue, getMessage(progressValue));
         if (data.status.done) {
-            clearInterval(progressInterval);
-            progressInterval = null;
+            stop();
             progressBar.reset();
         }
     };
@@ -48,12 +54,13 @@ gbili.poll = function() {
         setProgressBar : function(pBar) {
             progressBar = pBar;
         },
+        stop : stop,
         start : function(params) {
             params = params || {};
             if (params.hasOwnProperty('baseUrl')) this.setBaseUrl(params.baseUrl);
             if (params.hasOwnProperty('progressBar')) this.setProgressBar(params.progressBar);
 
-            if (null === progressInterval) {
+            if (typeof progressInterval === null) {
                 // Show the starting message
                 updateProgressView({status:{done:false, current:0, total:100}});
                 // Register the poll interval

@@ -39,12 +39,13 @@ gbili.ajaxForm = function (){
             form.on('submit', function(e) {
                 e.preventDefault();
 
-                if (fileInput.val() == '' && gbili.event.trigger(formCssSelector + '.no_file_selected_abort?', {
+                if (fileInput.val() == '') {
+                    var abortOnEmptyFile = gbili.event.trigger(formCssSelector + '.no_file_selected_abort?', {
                         target: fileInput, 
                         params: {form: form,},
                         defaultResponse: true,
-                    }).pop()) {
-                    return;
+                    }, 100).pop();
+                    if (abortOnEmptyFile) return;
                 }
                 var response = gbili.event.trigger(formCssSelector + '.submit?', {target: form,});
                 if (false === response.pop()) {
@@ -104,7 +105,8 @@ gbili.ajaxForm = function (){
                 statusToName[2] = '.response.valid.partial';
 
                 eventName = event.name + (((status in statusToName) && statusToName[status]) || '.response.notValid');
-                gbili.event.trigger(eventName, event);
+
+                gbili.event.trigger(eventName, {target: event.target, params: event.params});
             }, priority);
         },
     };
