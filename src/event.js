@@ -11,7 +11,7 @@ gbili.toType = function(obj) {
 gbili.event = function() { 
     // every event has
     // {
-    //     propagationIsStopped:false, 
+    //     isPropagationStopped:false, 
     //     name:?, 
     //     params:{}, 
     //     target:{}
@@ -50,14 +50,16 @@ gbili.event = function() {
     var executeEventListeners = function(triggeredEvent){
         var i, j, 
             listenerCallback, 
+            response,
             eventName = triggeredEvent.name,
             sortedListenerPriorities = triggeredEvent.listeners.sort();
 
         for (i in sortedListenerPriorities) {
             for (j in sortedListenerPriorities[i]) {
                 listenerCallback = sortedListenerPriorities[i][j];
-                responses[eventName].push(listenerCallback(triggeredEvent));
-                if (triggeredEvent.propagationIsStopped) {
+                response = listenerCallback(triggeredEvent);
+                if (typeof response !== 'undefined') responses[eventName].push(response);
+                if (triggeredEvent.isPropagationStopped) {
                     return false;
                 }
             }
@@ -81,12 +83,12 @@ gbili.event = function() {
         triggeredEvent.params = params.params || {};
         triggeredEvent.target = params.target || (params.targetGenerator && params.targetGenerator()) || {};
         triggeredEvent.lastListenerReturn = null;
-        triggeredEvent.propagationIsStopped = false;
+        triggeredEvent.isPropagationStopped = false;
 
         executeEventListeners(triggeredEvent);
 
         // If listeners did not return anything, retrun default response if available, else return responses
-        var returnDefaultResponse = params.hasOwnProperty('defaultResponse') && (responses[eventName].length() == 0);
+        var returnDefaultResponse = params.hasOwnProperty('defaultResponse') && (responses[eventName].length == 0);
         return (returnDefaultResponse && [params.defaultResponse]) || responses[eventName];
     };
 
