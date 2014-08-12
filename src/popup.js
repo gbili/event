@@ -29,10 +29,10 @@ gbili.popup = function() {
     };
 
     var initButtonHide = function() {
-        buttonHidePopup.on('click', reset); 
+        getButtonHide().on('click', reset); 
     }; 
     var initButtonShow = function() {
-        buttonShowPopup.on('click', show); 
+        getButtonShow().on('click', show); 
     }; 
 
     var getContainer = function(refresh) {
